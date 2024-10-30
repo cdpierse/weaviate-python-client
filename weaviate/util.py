@@ -8,6 +8,7 @@ import io
 import json
 import os
 import re
+import time
 import uuid as uuid_lib
 from pathlib import Path
 from typing import Union, Sequence, Any, Optional, List, Dict, Generator, Tuple, cast
@@ -471,6 +472,33 @@ def get_domain_from_weaviate_url(url: str) -> str:
 
     return url[11:].split("/")[0]
 
+def gfl_status_polling(collection: weaviate.collections.collection.sync.Collection, workflow_id: str) -> None:
+    """
+    Pings the GFL status endpoint and prints when finished.
+
+    Parameters
+    ----------
+    collection : weaviate.collections.collection.sync.Collection 
+        The Weaviate collection the GFL is running on.
+    workflow_id : str
+        The GFL workflow id.
+
+    Returns
+    -------
+    None
+    """
+    start = time.time()
+    finished = False
+
+    while not finished:
+        status = collection.gfl.status(
+            workflow_id
+        ).status.parent_state
+        if status == "completed":
+            finished = True
+        time.sleep(15) # wait 15 seconds before polling again
+
+    print(f"Finished running the GFL in {time.time() - start} seconds.")
 
 def _is_sub_schema(sub_schema: dict, schema: dict) -> bool:
     """
