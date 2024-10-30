@@ -491,12 +491,12 @@ def gfl_status_polling(collection: weaviate.collections.collection.sync.Collecti
     finished = False
 
     while not finished:
+        time.sleep(30) # wait 30 seconds before polling
         status = collection.gfl.status(
             workflow_id
         ).status.parent_state
         if status == "completed":
             finished = True
-        time.sleep(15) # wait 15 seconds before polling again
 
     print(f"Finished running the GFL in {time.time() - start} seconds.")
 
