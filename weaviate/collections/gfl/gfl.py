@@ -14,6 +14,19 @@ class GFLResponse(BaseModel):
     workflow_id: str
 
 
+class GFLQueryResponse(BaseModel):
+    """Response from an Agent query."""
+    query: str
+    answer: str
+    function_calls: List[Dict[str, Any]]
+    tokens_used: int
+    budget_remaining: int
+    confidence_score: float
+    sources: List[Any]
+    execution_time: float
+    llm_provider: Dict[str, str]
+
+
 class GFLStatus(BaseModel):
     """Status of a GFL workflow."""
 
@@ -178,6 +191,58 @@ class _GFLAsync(_GFLBase):
             },
         )
         return GFLResponse.model_validate(response.json())
+
+    async def query(
+        self,
+        query: str,
+        collections: Optional[List[Dict[str, str]]],
+        tenant: Optional[str] = None,
+        functions: Optional[List[str]] = None,
+        call_budget: int = 20,
+        lm_provider: str = "openai",
+        model_name: str = "gpt-4o",
+        api_key: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Response:
+        """
+        Query the GFL agent with a natural language query.
+
+        Args:
+            query (str): The natural language query to process
+            tenant (Optional[str]): The tenant to use for the query
+            functions (Optional[List[str]]): List of functions the agent can use
+            call_budget (int): Maximum number of function calls allowed
+            lm_provider (str): The language model provider to use
+            model_name (str): The specific model to use
+            api_key (Optional[str]): API key for the language model
+            description (Optional[str]): Description of the collection
+        """
+        response = await self.post(
+            "/agent/query",
+            json={
+                "query": query,
+                "weaviate": {
+                    "url": self._cluster_host,
+                    "key": self._token
+                },
+                "collections": collections or [{
+                    "name": self._name,
+                    "description": description
+                }],
+                "tenant": tenant,
+                "functions": functions or ["weaviate-search", "weaviate-gorilla"],
+                "call_budget": call_budget,
+                "llm_provider": {
+                    "provider": lm_provider,
+                    "provider_model_name": model_name,
+                    "api_key": api_key
+                },
+                "headers": {
+                    "X-OpenAI-Api-Key": api_key
+                }
+            }
+        )
+        return GFLQueryResponse.model_validate(response.json())
 
     async def status(self, workflow_id: str) -> GFLStatusResponse:
         """Get the status of a GFL workflow."""
