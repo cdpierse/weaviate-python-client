@@ -203,7 +203,7 @@ class _GFLAsync(_GFLBase):
         model_name: str = "gpt-4o",
         api_key: Optional[str] = None,
         description: Optional[str] = None,
-    ) -> Response:
+    ) -> GFLQueryResponse:
         """
         Query the GFL agent with a natural language query.
 
@@ -237,9 +237,7 @@ class _GFLAsync(_GFLBase):
                     "provider_model_name": model_name,
                     "api_key": api_key
                 },
-                "headers": {
-                    "X-OpenAI-Api-Key": api_key
-                }
+                "headers": self._headers
             }
         )
         return GFLQueryResponse.model_validate(response.json())
