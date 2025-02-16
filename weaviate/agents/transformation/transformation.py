@@ -68,7 +68,7 @@ class TransformationAgent:
 
         async with httpx.AsyncClient(base_url=self._agents_host) as client:
             response = await client.post(
-                "/gfls/create",
+                "/transformation/create",
                 headers=self._headers,
                 json=request_body,
                 timeout=self._timeout,
@@ -99,7 +99,7 @@ class TransformationAgent:
 
         async with httpx.AsyncClient(base_url=self._agents_host) as client:
             response = await client.post(
-                "/gfls/update",
+                "/transformation/update",
                 headers=self._headers,
                 json=request_body,
                 timeout=self._timeout,
