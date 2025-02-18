@@ -57,21 +57,17 @@ class QueryAgent:
         """
         self._client = client
         self._connection = client._connection
-        self._agents_host = agents_host or "https://gfl.labs.weaviate.io"
+        self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
         self._collections = collections
 
         # check if all collections have the same URL
         self.base_url = self._client._connection.url
 
-        self._headers = {"Content-Type": "application/json"}
-        self._headers.update(self._connection.additional_headers)
+        self._headers = {
+            "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
+            "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
+        }
         self._timeout = 60
-
-        self._cluster_host = self.base_url.replace(":443", "")
-
-        # Store token for use in request body instead of headers
-        self._token = self._connection.get_current_bearer_token().replace("Bearer ", "")
-
         self._query_agent_url = f"{self._agents_host}/agent/query"
 
     def run(
@@ -91,14 +87,10 @@ class QueryAgent:
         """
         request_body = {
             "query": query,
-            "weaviate_cloud_details": {
-                "url": self._cluster_host,
-                "key": self._token,
-            },
             "collection_names": [
                 c.name if isinstance(c, CollectionDescription) else c for c in self._collections
             ],
-            "headers": self._headers,
+            "headers": self._connection.additional_headers,
             "collection_view_properties": view_properties,
             "limit": 20,
             "tenant": None,
