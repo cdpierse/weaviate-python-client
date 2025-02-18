@@ -36,14 +36,16 @@ class TransformationAgent:
         self._operations = operations
 
         # Set up connection details
-        self._agents_host = agents_host or "https://gfl.labs.weaviate.io"
-        self._cluster_host = self._connection.url.replace(":443", "")
-        self._headers = {"Content-Type": "application/json"}
+        self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
+        self._headers = {
+            "Content-Type": "application/json",
+            "Authorization": self._connection.get_current_bearer_token().replace(
+                "Bearer ", ""
+            ),
+            "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
+        }
         self._headers.update(self._connection.additional_headers)
         self._timeout = 40
-
-        # Store token for use in request body
-        self._token = self._connection.get_current_bearer_token().replace("Bearer ", "")
 
     async def _execute_append_operation(
         self, operation: AppendPropertyOperation
@@ -53,10 +55,6 @@ class TransformationAgent:
             "instruction": operation.instruction,
             "view_properties": operation.view_properties,
             "collection": self._collection,
-            "weaviate": {
-                "url": self._cluster_host,
-                "key": self._token,
-            },
             "headers": self._headers,
             "on_properties": [
                 {
@@ -80,19 +78,18 @@ class TransformationAgent:
             # Create TransformationResponse with both operation name and workflow ID
             response_data = response.json()
             return TransformationResponse(
-                operation_name=operation.property_name, workflow_id=response_data["workflow_id"]
+                operation_name=operation.property_name,
+                workflow_id=response_data["workflow_id"],
             )
 
-    async def _execute_update_operation(self, operation: OperationStep) -> TransformationResponse:
+    async def _execute_update_operation(
+        self, operation: OperationStep
+    ) -> TransformationResponse:
         """Execute an update transformation operation."""
         request_body = {
             "instruction": operation.instruction,
             "view_properties": operation.view_properties,
             "collection": self._collection,
-            "weaviate": {
-                "url": self._cluster_host,
-                "key": self._token,
-            },
             "headers": self._headers,
             "on_properties": [operation.property_name],
         }
@@ -111,14 +108,19 @@ class TransformationAgent:
             # Create TransformationResponse with both operation name and workflow ID
             response_data = response.json()
             return TransformationResponse(
-                operation_name=operation.property_name, workflow_id=response_data["workflow_id"]
+                operation_name=operation.property_name,
+                workflow_id=response_data["workflow_id"],
             )
 
-    async def _execute_operation(self, operation: OperationStep) -> TransformationResponse:
+    async def _execute_operation(
+        self, operation: OperationStep
+    ) -> TransformationResponse:
         """Execute a single transformation operation."""
         if operation.operation_type == OperationType.APPEND:
             if not isinstance(operation, AppendPropertyOperation):
-                raise ValueError("Append operations must use AppendPropertyOperation type")
+                raise ValueError(
+                    "Append operations must use AppendPropertyOperation type"
+                )
             return await self._execute_append_operation(operation)
         return await self._execute_update_operation(operation)
 
