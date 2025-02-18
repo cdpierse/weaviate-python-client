@@ -39,9 +39,7 @@ class TransformationAgent:
         self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
         self._headers = {
             "Content-Type": "application/json",
-            "Authorization": self._connection.get_current_bearer_token().replace(
-                "Bearer ", ""
-            ),
+            "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
             "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
         }
         self._headers.update(self._connection.additional_headers)
@@ -82,9 +80,7 @@ class TransformationAgent:
                 workflow_id=response_data["workflow_id"],
             )
 
-    async def _execute_update_operation(
-        self, operation: OperationStep
-    ) -> TransformationResponse:
+    async def _execute_update_operation(self, operation: OperationStep) -> TransformationResponse:
         """Execute an update transformation operation."""
         request_body = {
             "instruction": operation.instruction,
@@ -112,15 +108,11 @@ class TransformationAgent:
                 workflow_id=response_data["workflow_id"],
             )
 
-    async def _execute_operation(
-        self, operation: OperationStep
-    ) -> TransformationResponse:
+    async def _execute_operation(self, operation: OperationStep) -> TransformationResponse:
         """Execute a single transformation operation."""
         if operation.operation_type == OperationType.APPEND:
             if not isinstance(operation, AppendPropertyOperation):
-                raise ValueError(
-                    "Append operations must use AppendPropertyOperation type"
-                )
+                raise ValueError("Append operations must use AppendPropertyOperation type")
             return await self._execute_append_operation(operation)
         return await self._execute_update_operation(operation)
 

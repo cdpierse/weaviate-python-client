@@ -65,9 +65,7 @@ class QueryAgent:
 
         self._headers = {
             "Content-Type": "application/json",
-            "Authorization": self._connection.get_current_bearer_token().replace(
-                "Bearer ", ""
-            ),
+            "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
             "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
         }
         self._headers.update(self._connection.additional_headers)
@@ -92,8 +90,7 @@ class QueryAgent:
         request_body = {
             "query": query,
             "collection_names": [
-                c.name if isinstance(c, CollectionDescription) else c
-                for c in self._collections
+                c.name if isinstance(c, CollectionDescription) else c for c in self._collections
             ],
             "headers": self._headers,
             "collection_view_properties": view_properties,
