@@ -64,11 +64,9 @@ class QueryAgent:
         self.base_url = self._client._connection.url
 
         self._headers = {
-            "Content-Type": "application/json",
             "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
             "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
         }
-        self._headers.update(self._connection.additional_headers)
         self._timeout = 60
         self._query_agent_url = f"{self._agents_host}/agent/query"
 
@@ -92,7 +90,7 @@ class QueryAgent:
             "collection_names": [
                 c.name if isinstance(c, CollectionDescription) else c for c in self._collections
             ],
-            "headers": self._headers,
+            "headers": self._connection.additional_headers,
             "collection_view_properties": view_properties,
             "limit": 20,
             "tenant": None,

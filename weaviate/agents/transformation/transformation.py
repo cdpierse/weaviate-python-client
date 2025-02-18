@@ -38,11 +38,9 @@ class TransformationAgent:
         # Set up connection details
         self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
         self._headers = {
-            "Content-Type": "application/json",
             "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
             "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),
         }
-        self._headers.update(self._connection.additional_headers)
         self._timeout = 40
 
     async def _execute_append_operation(
@@ -53,7 +51,7 @@ class TransformationAgent:
             "instruction": operation.instruction,
             "view_properties": operation.view_properties,
             "collection": self._collection,
-            "headers": self._headers,
+            "headers": self._connection.additional_headers,
             "on_properties": [
                 {
                     "name": operation.property_name,
@@ -86,7 +84,7 @@ class TransformationAgent:
             "instruction": operation.instruction,
             "view_properties": operation.view_properties,
             "collection": self._collection,
-            "headers": self._headers,
+            "headers": self._connection.additional_headers,
             "on_properties": [operation.property_name],
         }
 
