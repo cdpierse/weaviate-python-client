@@ -36,7 +36,7 @@ class TransformationAgent:
         self._operations = operations
 
         # Set up connection details
-        self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
+        self._agents_host = agents_host or "https://api.agents.weaviate.io"
         self._headers = {
             "Authorization": self._connection.get_current_bearer_token().replace("Bearer ", ""),
             "X-Weaviate-Cluster-Url": self._client._connection.url.replace(":443", ""),

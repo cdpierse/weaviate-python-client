@@ -57,7 +57,7 @@ class QueryAgent:
         """
         self._client = client
         self._connection = client._connection
-        self._agents_host = agents_host or "https://dev-agents.labs.weaviate.io"
+        self._agents_host = agents_host or "https://api.agents.weaviate.io"
         self._collections = collections
 
         # check if all collections have the same URL
